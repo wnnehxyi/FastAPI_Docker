@@ -1,0 +1,29 @@
+FROM python:3.8.0
+
+# Installing Oracle instant client
+WORKDIR    /opt/oracle
+
+RUN        apt-get update && apt-get install -y libaio1 wget unzip \
+            && wget https://download.oracle.com/otn_software/linux/instantclient/instantclient-basiclite-linuxx64.zip \
+            && unzip instantclient-basiclite-linuxx64.zip \
+            && rm -f instantclient-basiclite-linuxx64.zip \
+            && cd /opt/oracle/instantclient* \
+            && rm -f *jdbc* *occi* *mysql* *README *jar uidrvci genezi adrci \
+            && echo /opt/oracle/instantclient* > /etc/ld.so.conf.d/oracle-instantclient.conf \
+            && ldconfig
+
+WORKDIR /code
+
+COPY requirements.txt ./
+
+RUN pip install -r requirements.txt
+
+COPY . .
+
+EXPOSE XX
+
+COPY Fonts/jf-openhuninn-1.1.ttf /usr/local/lib/python3.8/site-packages/matplotlib/mpl-data/fonts/ttf/
+
+COPY Fonts/matplotlibrc /usr/local/lib/python3.8/site-packages/matplotlib/mpl-data/
+
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "XX"]
